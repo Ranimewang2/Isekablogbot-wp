@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AnimeReza WP Bot — Dashboard</title>
+<style>
+/* ── RESET + BASE ─────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:          #080a0f;
+  --surface:     rgba(255,255,255,0.03);
+  --surface-2:   rgba(255,255,255,0.06);
+  --border:      rgba(255,255,255,0.07);
+  --border-glow: rgba(99,179,237,0.25);
+  --accent:      #63b3ed;
+  --accent-2:    #9f7aea;
+  --green:       #68d391;
+  --red:         #fc8181;
+  --yellow:      #f6e05e;
+  --text:        #e2e8f0;
+  --text-muted:  #718096;
+  --grid-line:   rgba(99,179,237,0.06);
+  --glow-blue:   0 0 20px rgba(99,179,237,0.15), 0 0 60px rgba(99,179,237,0.05);
+  --glow-purple: 0 0 20px rgba(159,122,234,0.15), 0 0 60px rgba(159,122,234,0.05);
+  --radius:      12px;
+  --font:        'Inter', system-ui, -apple-system, sans-serif;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1.6;
+  min-height: 100vh;
+  /* Horizontal glowing grid lines */
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 59px,
+      var(--grid-line) 59px,
+      var(--grid-line) 60px
+    ),
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(99,179,237,0.08) 0%, transparent 60%);
+}
+
+/* ── LAYOUT ──────────────────────────────────────────── */
+.shell {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 24px 80px;
+}
+
+/* ── HEADER ──────────────────────────────────────────── */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28px 0 24px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 32px;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-icon {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  border-radius: 10px;
+  display: grid; place-items: center;
+  font-size: 18px;
+  box-shadow: var(--glow-blue);
+}
+
+.logo-text { font-size: 18px; font-weight: 700; letter-spacing: -0.3px; }
+.logo-sub  { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+
+.header-actions { display: flex; gap: 10px; align-items: center; }
+
+.status-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  animation: none;
+}
+.status-dot.online  { background: var(--green);  box-shadow: 0 0 8px var(--green); animation: pulse 2s infinite; }
+.status-dot.error   { background: var(--red); }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; } 50% { opacity: 0.4; }
+}
+
+/* ── NAV TABS ─────────────────────────────────────────── */
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 28px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 4px;
+  width: fit-content;
+}
+
+.tab {
+  padding: 8px 18px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.tab:hover  { color: var(--text); background: var(--surface-2); }
+.tab.active { color: var(--accent); background: rgba(99,179,237,0.1); box-shadow: 0 0 12px rgba(99,179,237,0.1); }
+
+/* ── PANELS ──────────────────────────────────────────── */
+.panel { display: none; }
+.panel.active { display: block; }
+
+/* ── STAT CARDS ──────────────────────────────────────── */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.stat-card:hover { border-color: var(--border-glow); }
+.stat-card:hover::before { opacity: 1; }
+
+.stat-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px; }
+.stat-value { font-size: 32px; font-weight: 700; letter-spacing: -1px; color: var(--text); }
+.stat-value.green  { color: var(--green); }
+.stat-value.blue   { color: var(--accent); }
+.stat-value.purple { color: var(--accent-2); }
+.stat-sub   { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+/* ── CARD ─────────────────────────────────────────────── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+}
+.card-title { font-size: 13px; font-weight: 600; color: var(--text); }
+.card-body  { padding: 20px; }
+
+/* ── TRIGGER BUTTON ──────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  border-radius: 8px;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #fff;
+  box-shadow: var(--glow-blue);
+}
+.btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
+.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+.btn-ghost {
+  background: var(--surface-2);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+.btn-ghost:hover { color: var(--text); border-color: var(--border-glow); }
+
+.btn-danger {
+  background: rgba(252,129,129,0.1);
+  color: var(--red);
+  border: 1px solid rgba(252,129,129,0.2);
+}
+.btn-danger:hover { background: rgba(252,129,129,0.18); }
+
+.btn-sm { padding: 5px 12px; font-size: 12px; }
+
+/* ── GENERATE PANEL ──────────────────────────────────── */
+.generate-hero {
+  background: linear-gradient(135deg, rgba(99,179,237,0.08), rgba(159,122,234,0.08));
+  border: 1px solid var(--border-glow);
+  border-radius: var(--radius);
+  padding: 36px;
+  text-align: center;
+  margin-bottom: 24px;
+  box-shadow: var(--glow-blue);
+}
+.generate-hero h2 { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+.generate-hero p  { color: var(--text-muted); margin-bottom: 24px; }
+
+.generate-btn {
+  font-size: 15px;
+  padding: 14px 36px;
+  border-radius: 10px;
+}
+
+/* Progress */
+.progress-log {
+  background: #0a0d14;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  font-family: 'Fira Code', 'Cascadia Code', monospace;
+  font-size: 12px;
+  color: var(--text-muted);
+  max-height: 220px;
+  overflow-y: auto;
+  display: none;
+}
+.progress-log.active { display: block; }
+.log-line { padding: 2px 0; }
+.log-line.success { color: var(--green); }
+.log-line.error   { color: var(--red); }
+.log-line.info    { color: var(--accent); }
+.log-line.warn    { color: var(--yellow); }
+
+/* ── TABLE ────────────────────────────────────────────── */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+th {
+  text-align: left;
+  padding: 10px 16px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+}
+td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  vertical-align: middle;
+}
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--surface-2); }
+
+/* ── BADGES ──────────────────────────────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+.badge-green  { background: rgba(104,211,145,0.12); color: var(--green); }
+.badge-blue   { background: rgba(99,179,237,0.12);  color: var(--accent); }
+.badge-purple { background: rgba(159,122,234,0.12); color: var(--accent-2); }
+.badge-yellow { background: rgba(246,224,94,0.12);  color: var(--yellow); }
+.badge-red    { background: rgba(252,129,129,0.12); color: var(--red); }
+.badge-gray   { background: rgba(255,255,255,0.06); color: var(--text-muted); }
+
+/* ── SETTINGS ─────────────────────────────────────────── */
+.settings-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+@media (max-width: 700px) { .settings-grid { grid-template-columns: 1fr; } }
+
+.field { margin-bottom: 16px; }
+.field label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 6px;
+}
+.field input, .field select {
+  width: 100%;
+  background: rgba(0,0,0,0.4);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: var(--text);
+  font-size: 13px;
+  font-family: var(--font);
+  transition: border-color 0.2s;
+  outline: none;
+}
+.field input:focus, .field select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(99,179,237,0.08);
+}
+.field input::placeholder { color: var(--text-muted); }
+.field .hint { font-size: 11px; color: var(--text-muted); margin-top: 5px; }
+
+.save-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-top: 8px;
+}
+.save-msg { font-size: 12px; color: var(--green); opacity: 0; transition: opacity 0.3s; }
+.save-msg.show { opacity: 1; }
+
+/* ── RUN LOG ─────────────────────────────────────────── */
+.run-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.run-item:last-child { border-bottom: none; }
+.run-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+/* ── LOADING SPINNER ─────────────────────────────────── */
+.spinner {
+  width: 16px; height: 16px;
+  border: 2px solid rgba(255,255,255,0.1);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: inline-block;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── EMPTY STATE ─────────────────────────────────────── */
+.empty {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+.empty .icon { font-size: 32px; margin-bottom: 8px; }
+
+/* ── ALERT ───────────────────────────────────────────── */
+.alert {
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.alert-warn { background: rgba(246,224,94,0.08); border: 1px solid rgba(246,224,94,0.2); color: var(--yellow); }
+.alert-info { background: rgba(99,179,237,0.08); border: 1px solid rgba(99,179,237,0.2); color: var(--accent); }
+
+/* ── SCROLLBAR ───────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="logo">
+      <div class="logo-icon">🎌</div>
+      <div>
+        <div class="logo-text">AnimeReza WP Bot</div>
+        <div class="logo-sub">Automated Anime Blog Writer</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <span class="status-dot" id="statusDot"></span>
+      <span id="statusText" style="font-size:12px;color:var(--text-muted)">Checking...</span>
+    </div>
+  </header>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('generate')">⚡ Generate</button>
+    <button class="tab" onclick="switchTab('posts')">📝 Posts</button>
+    <button class="tab" onclick="switchTab('queue')">🕐 Queue</button>
+    <button class="tab" onclick="switchTab('runs')">📊 Run Logs</button>
+    <button class="tab" onclick="switchTab('settings')">⚙️ Settings</button>
+  </div>
+
+  <!-- ── PANEL: GENERATE ─────────────────────────────── -->
+  <div class="panel active" id="panel-generate">
+
+    <!-- Stats -->
+    <div class="stats-grid" id="statsGrid">
+      <div class="stat-card">
+        <div class="stat-label">Total Published</div>
+        <div class="stat-value blue" id="stat-published">—</div>
+        <div class="stat-sub">All time</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Queue Ready</div>
+        <div class="stat-value purple" id="stat-queue">—</div>
+        <div class="stat-sub">Pending articles</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Last Run</div>
+        <div class="stat-value" id="stat-lastrun" style="font-size:18px">—</div>
+        <div class="stat-sub" id="stat-lastrun-sub">Never</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Blacklisted</div>
+        <div class="stat-value" id="stat-blacklist">—</div>
+        <div class="stat-sub">Topics skipped</div>
+      </div>
+    </div>
+
+    <!-- Generate hero -->
+    <div class="generate-hero">
+      <h2>🚀 Generate Articles</h2>
+      <p>Runs the full 7-step workflow — trending → topics → plan → images → write → validate → publish</p>
+      <button class="btn btn-primary generate-btn" id="generateBtn" onclick="triggerGenerate()">
+        ⚡ Generate Now (2 Articles)
+      </button>
+    </div>
+
+    <!-- Progress log -->
+    <div class="progress-log" id="progressLog"></div>
+
+    <!-- Last run result -->
+    <div class="card" id="lastResultCard" style="display:none">
+      <div class="card-header">
+        <span class="card-title">Last Run Result</span>
+      </div>
+      <div class="card-body" id="lastResultBody"></div>
+    </div>
+
+  </div>
+
+  <!-- ── PANEL: POSTS ─────────────────────────────────── -->
+  <div class="panel" id="panel-posts">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Published Posts</span>
+        <button class="btn btn-ghost btn-sm" onclick="loadPosts()">↻ Refresh</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Type</th>
+              <th>Published</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="postsBody">
+            <tr><td colspan="4"><div class="empty"><div class="spinner"></div></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PANEL: QUEUE ─────────────────────────────────── -->
+  <div class="panel" id="panel-queue">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Article Queue</span>
+        <button class="btn btn-ghost btn-sm" onclick="loadQueue()">↻ Refresh</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Type</th>
+              <th>Status</th>
+              <th>Scheduled</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="queueBody">
+            <tr><td colspan="5"><div class="empty"><div class="spinner"></div></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PANEL: RUN LOGS ──────────────────────────────── -->
+  <div class="panel" id="panel-runs">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Bot Run History</span>
+        <button class="btn btn-ghost btn-sm" onclick="loadRuns()">↻ Refresh</button>
+      </div>
+      <div id="runsBody">
+        <div class="empty"><div class="spinner"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PANEL: SETTINGS ──────────────────────────────── -->
+  <div class="panel" id="panel-settings">
+
+    <div class="alert alert-info">
+      ⚠️ All credentials are stored securely in Supabase — never in Vercel environment variables.
+    </div>
+
+    <div class="settings-grid">
+
+      <!-- WordPress -->
+      <div class="card">
+        <div class="card-header"><span class="card-title">🔗 WordPress</span></div>
+        <div class="card-body">
+          <div class="field">
+            <label>WP Site URL</label>
+            <input type="url" id="s-wpUrl" readonly style="opacity:0.7" />
+          </div>
+          <div class="field">
+            <label>WP Username</label>
+            <input type="text" id="s-wpUsername" readonly style="opacity:0.7" />
+          </div>
+          <div class="field">
+            <label>WP Application Password</label>
+            <input type="text" id="s-wpAppPassword" readonly style="opacity:0.7" value="••••••••" />
+            <div class="hint">Set in config.js</div>
+          </div>
+          <div class="save-bar">
+            <button class="btn btn-ghost btn-sm" onclick="testWP()">🔌 Test Connection</button>
+            <span id="wpTestMsg" style="font-size:12px;color:var(--text-muted)"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- OpenRouter -->
+      <div class="card">
+        <div class="card-header"><span class="card-title">🤖 OpenRouter</span></div>
+        <div class="card-body">
+          <div class="field">
+            <label>OpenRouter API Key</label>
+            <input type="text" id="s-openrouterKey" readonly style="opacity:0.7" value="••••••••" />
+            <div class="hint">Set in config.js</div>
+          </div>
+          <div class="field">
+            <label>Articles Per Run</label>
+            <input type="text" id="s-articlesPerRun" readonly style="opacity:0.7" />
+          </div>
+          <div class="field">
+            <label>Schedule Gap (hours)</label>
+            <input type="text" id="s-scheduleGapHrs" readonly style="opacity:0.7" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Blog Identity -->
+      <div class="card">
+        <div class="card-header"><span class="card-title">🌐 Blog Identity</span></div>
+        <div class="card-body">
+          <div class="field">
+            <label>Blog Name</label>
+            <input type="text" id="s-blogName" readonly style="opacity:0.7" />
+          </div>
+          <div class="field">
+            <label>Main Site URL (for CTAs)</label>
+            <input type="url" id="s-siteUrl" readonly style="opacity:0.7" />
+            <div class="hint">CTAs link back to this site (your streaming platform)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- InfinityFree Cron -->
+      <div class="card">
+        <div class="card-header"><span class="card-title">⏰ InfinityFree Cron Setup</span></div>
+        <div class="card-body">
+          <div class="alert alert-info" style="margin-bottom:14px">
+            Add these 3 cron jobs in InfinityFree cPanel → Cron Jobs
+          </div>
+          <div class="field">
+            <label>Cron Command (copy this)</label>
+            <input type="text" id="cronCommand" readonly style="font-family:monospace;font-size:11px;cursor:pointer" onclick="this.select()" />
+            <div class="hint">Click to select — paste into all 3 cron jobs</div>
+          </div>
+          <div style="font-size:12px;color:var(--text-muted);line-height:1.8">
+            <strong style="color:var(--text)">Cron 1:</strong> 0 7 * * * (7 AM daily)<br>
+            <strong style="color:var(--text)">Cron 2:</strong> 0 13 * * * (1 PM daily)<br>
+            <strong style="color:var(--text)">Cron 3:</strong> 0 19 * * * (7 PM daily)
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="alert alert-warn" style="margin-top:8px">
+      📝 To update settings — edit <strong>config.js</strong> in your GitHub repo and commit. Vercel auto-redeploys in ~30 seconds.
+    </div>
+
+  </div>
+
+</div><!-- /shell -->
+
+<script>
+// ── CONFIG ────────────────────────────────────────────
+const API = ''; // Same origin — Vercel serves both dashboard and API
+
+// ── TAB SWITCHER ──────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach((t, i) => {
+    const names = ['generate','posts','queue','runs','settings'];
+    t.classList.toggle('active', names[i] === name);
+  });
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+
+  // Lazy load data
+  if (name === 'posts')    loadPosts();
+  if (name === 'queue')    loadQueue();
+  if (name === 'runs')     loadRuns();
+  if (name === 'settings') loadSettings();
+}
+
+// ── FETCH HELPER ──────────────────────────────────────
+async function apiFetch(path, opts = {}) {
+  const res  = await fetch(API + path, opts);
+  return res.json();
+}
+
+// ── STATUS CHECK ──────────────────────────────────────
+async function checkStatus() {
+  try {
+    const data = await apiFetch('/api/health');
+    const dot  = document.getElementById('statusDot');
+    const txt  = document.getElementById('statusText');
+    if (data.ok) {
+      dot.className = 'status-dot online';
+      txt.textContent = data.configured ? 'Online & Configured' : 'Online — Needs Setup';
+      txt.style.color = data.configured ? 'var(--green)' : 'var(--yellow)';
+    }
+  } catch {
+    document.getElementById('statusDot').className = 'status-dot error';
+    document.getElementById('statusText').textContent = 'Offline';
+  }
+}
+
+// ── LOAD STATS ────────────────────────────────────────
+async function loadStats() {
+  try {
+    const data = await apiFetch('/api/posts?action=stats');
+    if (!data.ok) return;
+
+    document.getElementById('stat-published').textContent = data.queue?.published ?? '0';
+    document.getElementById('stat-queue').textContent     = data.queue?.ready     ?? '0';
+    document.getElementById('stat-blacklist').textContent = data.blacklist         ?? '0';
+
+    if (data.lastRun) {
+      const t = new Date(data.lastRun.ran_at);
+      document.getElementById('stat-lastrun').textContent     = data.lastRun.success ? '✓' : '✗';
+      document.getElementById('stat-lastrun').style.color     = data.lastRun.success ? 'var(--green)' : 'var(--red)';
+      document.getElementById('stat-lastrun-sub').textContent = t.toLocaleDateString() + ' ' + t.toLocaleTimeString();
+    }
+  } catch {}
+}
+
+// ── GENERATE ─────────────────────────────────────────
+async function triggerGenerate() {
+  const btn = document.getElementById('generateBtn');
+  const log = document.getElementById('progressLog');
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Running...';
+  log.className  = 'progress-log active';
+  log.innerHTML  = '';
+
+  function addLog(msg, type = '') {
+    const line = document.createElement('div');
+    line.className = 'log-line ' + type;
+    line.textContent = '[' + new Date().toLocaleTimeString() + '] ' + msg;
+    log.appendChild(line);
+    log.scrollTop = log.scrollHeight;
+  }
+
+  addLog('Starting bot run...', 'info');
+  addLog('Step 1: Fetching Google Trends + ANN signals...', 'info');
+
+  try {
+    const data = await apiFetch('/api/generate', { method: 'POST' });
+
+    if (data.ok) {
+      const dur = data.duration || (data.durationMs ? (data.durationMs/1000).toFixed(1)+'s' : '—');
+      addLog(`✓ Completed in ${dur}`, 'success');
+      addLog(`Generated: ${data.articlesGenerated ?? 0} | Published: ${data.articlesPublished ?? 0}`, 'success');
+
+      if (data.posts?.length) {
+        data.posts.forEach(p => {
+          addLog(`✓ "${p.title}" → ${p.url}`, 'success');
+          if (p.scheduled) addLog(`  Scheduled: ${new Date(p.scheduled).toLocaleString()}`, 'info');
+        });
+      }
+
+      if (data.errors?.length) {
+        data.errors.forEach(e => addLog(`✗ ${e.error}`, 'error'));
+      }
+
+      // Show result card
+      showResult(data);
+    } else {
+      addLog('✗ Run failed: ' + (data.error || 'Unknown error'), 'error');
+    }
+  } catch (e) {
+    addLog('✗ Network error: ' + e.message, 'error');
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '⚡ Generate Now (2 Articles)';
+  loadStats();
+}
+
+function showResult(data) {
+  const card = document.getElementById('lastResultCard');
+  const body = document.getElementById('lastResultBody');
+  card.style.display = 'block';
+
+  body.innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin-bottom:16px">
+      <div><div style="font-size:11px;color:var(--text-muted)">Generated</div><div style="font-size:22px;font-weight:700;color:var(--accent)">${data.articlesGenerated}</div></div>
+      <div><div style="font-size:11px;color:var(--text-muted)">Published</div><div style="font-size:22px;font-weight:700;color:var(--green)">${data.articlesPublished}</div></div>
+      <div><div style="font-size:11px;color:var(--text-muted)">Duration</div><div style="font-size:22px;font-weight:700;color:var(--text)">${data.duration || (data.durationMs ? (data.durationMs/1000).toFixed(1)+'s' : '—')}</div></div>
+      <div><div style="font-size:11px;color:var(--text-muted)">Errors</div><div style="font-size:22px;font-weight:700;color:${data.errors?.length ? 'var(--red)' : 'var(--text-muted)'}">${data.errors?.length || 0}</div></div>
+    </div>
+    ${(data.posts || []).map(p => `
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
+        <span class="badge ${p.status === 'publish' ? 'badge-green' : 'badge-yellow'}">${p.status === 'future' ? '⏰ Scheduled' : '✓ Live'}</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:600;font-size:13px">${p.title}</div>
+          <div style="font-size:11px;color:var(--text-muted)">${p.wordCount} words · ${p.type}</div>
+        </div>
+        <a href="${p.url}" target="_blank" class="btn btn-ghost btn-sm">View →</a>
+      </div>
+    `).join('')}
+  `;
+}
+
+// ── POSTS TABLE ───────────────────────────────────────
+async function loadPosts() {
+  const tbody = document.getElementById('postsBody');
+  tbody.innerHTML = '<tr><td colspan="4"><div class="empty"><div class="spinner"></div></div></td></tr>';
+
+  const data = await apiFetch('/api/posts?action=recent');
+  if (!data.ok || !data.posts?.length) {
+    tbody.innerHTML = '<tr><td colspan="4"><div class="empty"><div class="icon">📭</div>No posts yet</div></td></tr>';
+    return;
+  }
+
+  const typeColors = { REVIEW:'badge-blue', TOP_LIST:'badge-purple', NEWS:'badge-green', EXPLAINED:'badge-yellow' };
+
+  tbody.innerHTML = data.posts.map(p => `
+    <tr>
+      <td style="max-width:320px">
+        <div style="font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.title || p.slug}</div>
+        <div style="font-size:11px;color:var(--text-muted)">${p.slug}</div>
+      </td>
+      <td><span class="badge ${typeColors[p.post_type] || 'badge-gray'}">${p.post_type || '—'}</span></td>
+      <td style="color:var(--text-muted);font-size:12px">${new Date(p.published_at).toLocaleDateString()}</td>
+      <td>
+        ${p.wp_url ? `<a href="${p.wp_url}" target="_blank" class="btn btn-ghost btn-sm">View</a>` : ''}
+        <button class="btn btn-danger btn-sm" style="margin-left:6px" onclick="blacklistSlug('${p.slug}')">Block</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+// ── QUEUE TABLE ───────────────────────────────────────
+async function loadQueue() {
+  const tbody = document.getElementById('queueBody');
+  tbody.innerHTML = '<tr><td colspan="5"><div class="empty"><div class="spinner"></div></div></td></tr>';
+
+  const data = await apiFetch('/api/posts?action=queue');
+  if (!data.ok || !data.queue?.length) {
+    tbody.innerHTML = '<tr><td colspan="5"><div class="empty"><div class="icon">✅</div>Queue is empty</div></td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = data.queue.map(q => `
+    <tr>
+      <td style="max-width:280px">
+        <div style="font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${q.title || q.slug}</div>
+      </td>
+      <td><span class="badge badge-blue">${q.post_type || '—'}</span></td>
+      <td><span class="badge ${q.status === 'ready' ? 'badge-yellow' : q.status === 'published' ? 'badge-green' : 'badge-gray'}">${q.status}</span></td>
+      <td style="color:var(--text-muted);font-size:12px">${q.scheduled_for ? new Date(q.scheduled_for).toLocaleString() : 'Now'}</td>
+      <td><button class="btn btn-ghost btn-sm" onclick="markPublished('${q.id}')">Mark Done</button></td>
+    </tr>
+  `).join('');
+}
+
+async function markPublished(id) {
+  await apiFetch('/api/posts', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ action:'update_queue', id, status:'published' }),
+  });
+  loadQueue();
+}
+
+// ── RUN LOGS ──────────────────────────────────────────
+async function loadRuns() {
+  const body = document.getElementById('runsBody');
+  const data = await apiFetch('/api/posts?action=runs');
+
+  if (!data.ok || !data.runs?.length) {
+    body.innerHTML = '<div class="empty"><div class="icon">📋</div>No runs yet</div>';
+    return;
+  }
+
+  body.innerHTML = data.runs.map(r => `
+    <div class="run-item">
+      <div class="run-dot" style="background:${r.success ? 'var(--green)' : 'var(--red)'}"></div>
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-weight:500;font-size:13px">${r.success ? '✓ Success' : '✗ Failed'}</span>
+          <span class="badge badge-gray">${r.trigger || 'cron'}</span>
+          ${r.articles_published ? `<span class="badge badge-green">${r.articles_published} published</span>` : ''}
+        </div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:3px">
+          ${new Date(r.ran_at).toLocaleString()} · ${r.duration_ms ? (r.duration_ms/1000).toFixed(1)+'s' : '—'}
+          ${r.models_used?.length ? ` · ${r.models_used[0]}` : ''}
+        </div>
+        ${r.error ? `<div style="font-size:11px;color:var(--red);margin-top:3px">${r.error}</div>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── SETTINGS ──────────────────────────────────────────
+async function loadSettings() {
+  try {
+    const data = await apiFetch('/api/health', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'get_settings' }),
+    });
+    if (!data.ok) return;
+
+    const s = data.settings;
+    const f = (id, key) => {
+      const el = document.getElementById(id);
+      if (el && s[key] !== undefined) el.value = s[key];
+    };
+
+    f('s-wpUrl',          'wp_url');
+    f('s-wpUsername',     'wp_username');
+    f('s-blogName',       'blog_name');
+    f('s-siteUrl',        'site_url');
+    f('s-articlesPerRun', 'articles_per_run');
+    f('s-scheduleGapHrs', 'schedule_gap_hrs');
+
+    // Set cron command
+    const cronEl = document.getElementById('cronCommand');
+    if (cronEl) cronEl.value = `curl -s ${window.location.origin}/api/generate > /dev/null 2>&1`;
+
+  } catch {}
+}
+
+async function saveSettings() {
+  const settings = {
+    wpUrl:          document.getElementById('s-wpUrl')?.value,
+    wpUsername:     document.getElementById('s-wpUsername')?.value,
+    wpAppPassword:  document.getElementById('s-wpAppPassword')?.value,
+    openrouterKey:  document.getElementById('s-openrouterKey')?.value,
+    blogName:       document.getElementById('s-blogName')?.value,
+    siteUrl:        document.getElementById('s-siteUrl')?.value,
+    articlesPerRun: document.getElementById('s-articlesPerRun')?.value,
+    scheduleGapHrs: document.getElementById('s-scheduleGapHrs')?.value,
+  };
+
+  // Remove empty values
+  Object.keys(settings).forEach(k => { if (!settings[k]) delete settings[k]; });
+
+  const data = await apiFetch('/api/health', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ action:'save_settings', settings }),
+  });
+
+  const msg = document.getElementById('saveMsg');
+  if (data.ok) {
+    msg.textContent = '✓ Settings saved!';
+    msg.style.color = 'var(--green)';
+  } else {
+    msg.textContent = '✗ Save failed: ' + (data.error || '');
+    msg.style.color = 'var(--red)';
+  }
+  msg.classList.add('show');
+  setTimeout(() => msg.classList.remove('show'), 3000);
+
+  checkStatus();
+}
+
+async function testWP() {
+  const msg = document.getElementById('wpTestMsg');
+  msg.textContent = 'Testing...';
+  msg.style.color = 'var(--text-muted)';
+
+  const data = await apiFetch('/api/health', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ action:'test_wp' }),
+  });
+
+  if (data.ok) {
+    msg.textContent = `✓ Connected as "${data.username}"`;
+    msg.style.color = 'var(--green)';
+  } else {
+    msg.textContent = '✗ ' + (data.error || 'Connection failed');
+    msg.style.color = 'var(--red)';
+  }
+}
+
+// ── BLACKLIST ─────────────────────────────────────────
+async function blacklistSlug(slug) {
+  if (!confirm(`Block "${slug}" from future posts?`)) return;
+  await apiFetch('/api/posts', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ action:'blacklist', slug }),
+  });
+  loadStats();
+  loadPosts();
+}
+
+// ── INIT ──────────────────────────────────────────────
+checkStatus();
+loadStats();
+</script>
+</body>
+</html>
