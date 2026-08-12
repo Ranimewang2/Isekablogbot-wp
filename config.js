@@ -8,7 +8,7 @@ const config = {
   wpAppPassword: '4KlYfX22imD!cFlV&lWBVZCz',        // WP Application Password
 
   // ── OpenRouter ─────────────────────────────────────────
-  openrouterKey: 'sk-or-xxxxxxxxxxxxxxxxxxxx',
+  openrouterKey: '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',
 
   // ── Blog identity ──────────────────────────────────────
   blogName:      'My Anime Blog',
