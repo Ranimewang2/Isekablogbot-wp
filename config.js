@@ -14,7 +14,7 @@ const config = {
   siteUrl:  'https://animereza.xyz',
 
   // ── Generation config ──────────────────────────────────
-  articlesPerRun: 2,
+  articlesPerRun: 1,
   scheduleGapHrs: 4,
 };
 
