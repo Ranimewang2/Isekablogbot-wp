@@ -1,0 +1,16 @@
+{
+  "version": 2,
+  "functions": {
+    "api/generate.js": { "maxDuration": 60 },
+    "api/health.js":   { "maxDuration": 15 },
+    "api/posts.js":    { "maxDuration": 15 }
+  },
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/api/$1" },
+    { "src": "/",         "dest": "/dashboard/index.html" },
+    { "src": "/(.*)",     "dest": "/dashboard/index.html" }
+  ],
+  "crons": [
+    { "path": "/api/generate", "schedule": "0 8 * * *" }
+  ]
+}

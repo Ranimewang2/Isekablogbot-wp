@@ -1,0 +1,14 @@
+{
+  "name": "animereza-wp-bot",
+  "version": "1.0.0",
+  "description": "Automated anime WordPress blog writer",
+  "type": "module",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod"
+  },
+  "dependencies": {},
+  "engines": {
+    "node": "24.x"
+  }
+}
