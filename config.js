@@ -3,9 +3,9 @@
 
 const config = {
   // ── WordPress ──────────────────────────────────────────
-  wpUrl:         'https://yourblog.com',       // e.g. https://animereza.xyz
-  wpUsername:    'your_wp_username',
-  wpAppPassword: 'xxxx xxxx xxxx xxxx',        // WP Application Password
+  wpUrl:         'https://isekaiblogging.gt.tc',       // e.g. https://animereza.xyz
+  wpUsername:    'isekai',
+  wpAppPassword: '4KlYfX22imD!cFlV&lWBVZCz',        // WP Application Password
 
   // ── OpenRouter ─────────────────────────────────────────
   openrouterKey: 'sk-or-xxxxxxxxxxxxxxxxxxxx',
